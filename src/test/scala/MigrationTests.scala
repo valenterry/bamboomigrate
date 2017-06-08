@@ -152,7 +152,7 @@ object MigrationTests extends TestSuite {
 						"""
 						Migration.between[TestClass, TargetClass](
 							PrependStep('addedField ->> "testValue") ::
-							|//We "forgot" this step, so the migration path should be illtyped: AppendStep('haveYouForgottenMe ->> 42) ::
+							//We "forgot" this step, so the migration path should be illtyped: AppendStep('haveYouForgottenMe ->> 42) ::
 							AppendStep('addedField2 ->> "testValue2") ::
 							HNil
 						)
