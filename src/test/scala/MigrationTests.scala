@@ -1,8 +1,5 @@
 import bamboomigrate._
-import bamboomigrate.circe._
-
 import shapeless.syntax.singleton.mkSingletonOps
-
 import utest._
 
 object MigrationTests extends TestSuite {
@@ -183,6 +180,7 @@ object MigrationTests extends TestSuite {
 		}
 		"A fallback decoder" -{
 			import io.circe.parser.decode
+			import bamboomigrate.circe._
 			case class TestClass(dummy1: String)
 
 			"can be created from a list with one migration" -{
@@ -216,7 +214,7 @@ object MigrationTests extends TestSuite {
 				case class TargetClass(prependedField: String, dummy1: String, dummy2: String)
 				val dummy2DefaultValue = "dummy2DefaultValue"
 				val prependedFieldDefaultValue = "prependedFieldDefaultValue"
-				val testMigrations =Migration.between[TestClass, TargetClass](
+				val testMigrations = Migration.between[TestClass, TargetClass](
 					PrependStep('prependedField ->> prependedFieldDefaultValue) ::
 					AppendStep('dummy2 ->> dummy2DefaultValue) ::
 					HNil
@@ -259,6 +257,88 @@ object MigrationTests extends TestSuite {
 				compileError(""" CirceDecoder.createFallbackDecoder(HNil) """)
 			}
 		}
+
+		"A fallback playjson reads" -{
+			import bamboomigrate.playjson._
+			import play.api.libs.json._
+			case class TestClass(dummy1: String)
+
+			"can be created from a list with one migration" -{
+				case class TargetClass(dummy1: String, dummy2: String)
+				val dummy2MigrationValue = "dummy2MigrationValue"
+				val testMigrations = Migration.instance{(obj:TestClass) => TargetClass(dummy1 = obj.dummy1, dummy2 = dummy2MigrationValue)} :: HNil
+
+				val fallbackDecoder = PlayJson.createFallbackReads(testMigrations)
+
+				"and parse the json for TestClass" -{
+					val decodeResult = Json.parse(
+						"""{
+						  |"dummy1": "dummy1JsonValue"
+						  |}
+						""".stripMargin).validate[TargetClass](fallbackDecoder).asEither
+					val expectedDecodeResult = Right(TargetClass(dummy1 = "dummy1JsonValue", dummy2 = dummy2MigrationValue))
+					assert(decodeResult == expectedDecodeResult)
+				}
+				"and parse the json for TargetClass"- {
+					val decodeResult = Json.parse(
+						"""{
+						  |"dummy1": "dummy1JsonValue",
+						  |"dummy2": "dummy2JsonValue"
+						  |}
+						""".stripMargin).validate[TargetClass](fallbackDecoder).asEither
+					val expectedDecodeResult = Right(TargetClass(dummy1 = "dummy1JsonValue", dummy2 = "dummy2JsonValue"))
+					assert(decodeResult == expectedDecodeResult)
+				}
+			}
+
+			"can be created from a list with multiple migrations" -{
+				case class TargetClass(prependedField: String, dummy1: String, dummy2: String)
+				val dummy2DefaultValue = "dummy2DefaultValue"
+				val prependedFieldDefaultValue = "prependedFieldDefaultValue"
+				val testMigrations = Migration.between[TestClass, TargetClass](
+					PrependStep('prependedField ->> prependedFieldDefaultValue) ::
+						AppendStep('dummy2 ->> dummy2DefaultValue) ::
+						HNil
+				)
+				val fallbackDecoder = PlayJson.createFallbackReads(testMigrations)
+
+				"and parse the json for TestClass" -{
+					val decodeResult = Json.parse(
+						"""{
+						  |"dummy1": "dummy1JsonValue"
+						  |}
+						""".stripMargin).validate[TargetClass](fallbackDecoder).asEither
+					val expectedDecodeResult = Right(TargetClass(dummy1 = "dummy1JsonValue", dummy2 = dummy2DefaultValue, prependedField = prependedFieldDefaultValue))
+					assert(decodeResult == expectedDecodeResult)
+				}
+				"and parse the json for the intermediate type like: `prependedField: String, dummy1: String`"- {
+					val decodeResult = Json.parse(
+						"""{
+						  |"dummy1": "dummy1JsonValue",
+						  |"prependedField": "prependedFieldJsonValue"
+						  |}
+						""".stripMargin).validate[TargetClass](fallbackDecoder).asEither
+					val expectedDecodeResult = Right(TargetClass(dummy1 = "dummy1JsonValue", dummy2 = dummy2DefaultValue, prependedField = "prependedFieldJsonValue"))
+					assert(decodeResult == expectedDecodeResult)
+				}
+				"and parse the json for TargetClass"- {
+					val decodeResult = Json.parse(
+						"""{
+						  |"dummy1": "dummy1JsonValue",
+						  |"prependedField": "prependedFieldJsonValue",
+						  |"dummy2": "dummy2JsonValue"
+						  |}
+						""".stripMargin).validate[TargetClass](fallbackDecoder).asEither
+					val expectedDecodeResult = Right(TargetClass(dummy1 = "dummy1JsonValue", dummy2 = "dummy2JsonValue", prependedField = "prependedFieldJsonValue"))
+					assert(decodeResult == expectedDecodeResult)
+				}
+			}
+
+			"cannot be created from a list with no migrations" - {
+				compileError(""" createFallbackDecoder(HNil) """)
+			}
+		}
+
 		//Works with more fields, but takes waaay to long. The scalac flag -Yinduction-heuristics greatly helps in reducing compile times, but it still takes time with many fields.
 		"Work with huge amounts of anything (steps, migrations, fields in classes)"-{
 			case class BaseClass(field0: String)

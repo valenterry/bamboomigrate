@@ -60,7 +60,9 @@ scalacOptions := scalacOptionsVersion(scalaVersion.value)
 
 libraryDependencies ++= Seq(
 	"com.chuusai" %% "shapeless" % "2.3.2",
-	"com.lihaoyi" %% "utest" % "0.4.5" % "test"
+	"com.lihaoyi" %% "utest" % "0.4.5" % "test",
+	"com.typesafe.play" %% "play-json" % "2.6.0-M3",
+	"org.julienrf" %% "play-json-derived-codecs" % "4.0.0-RC1"
 )
 
 val circeVersion = "0.8.0"
