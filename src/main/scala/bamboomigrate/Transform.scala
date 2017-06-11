@@ -1,10 +1,11 @@
-import shapeless._
+package bamboomigrate
+
+import bamboomigrate.TypelevelUtils.{LazyLeftFolder, getFieldValue}
 import shapeless.PolyDefns._
+import shapeless._
 import shapeless.labelled._
 import shapeless.ops.hlist._
 import shapeless.ops.record._
-import TypelevelUtils.getFieldValue
-import TypelevelUtils.LazyLeftFolder
 
 import scala.annotation.implicitNotFound
 

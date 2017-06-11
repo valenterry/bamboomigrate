@@ -1,8 +1,10 @@
-import Transform.StepConstraint.OnlySteps
-import Transform.{ApplyTransformationStep, transformationByAnyStep}
-import TypelevelUtils.{LazyLeftFolder, LazyLeftScanner, getFieldValue}
-import shapeless.labelled.{FieldType, field}
+package bamboomigrate
+
+import bamboomigrate.Transform.StepConstraint.OnlySteps
+import bamboomigrate.Transform.{ApplyTransformationStep, transformationByAnyStep}
+import bamboomigrate.TypelevelUtils.{LazyLeftFolder, LazyLeftScanner, getFieldValue}
 import shapeless._
+import shapeless.labelled.{FieldType, field}
 import shapeless.ops.hlist.{Init, Last, LeftFolder, Patcher, Prepend}
 import shapeless.ops.record.{Remover, Renamer}
 
@@ -111,16 +113,6 @@ object Migration {
 				}
 			}
 	}
-
-
-
-
-
-
-
-
-
-
 
 	object combineMigrations extends Poly2 {
 		implicit def combine[A, B, C]: Case.Aux[Migration[A, B], Migration[B, C], Migration[A, C]] =

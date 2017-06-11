@@ -1,14 +1,13 @@
-import Transform._
-import shapeless.record.Record
+import bamboomigrate._
+import bamboomigrate.circe._
+
+import shapeless.syntax.singleton.mkSingletonOps
+
 import utest._
 
 object MigrationTests extends TestSuite {
-	import shapeless._
-	import shapeless.syntax.singleton._
 
-	import TypelevelUtils.labelledGenericIdentity
-
-	val tests = this{
+	val tests = this {
 		//Some common test data helper
 		val dummy1FieldValue = "dummy1"
 		val dummy1Field = 'dummy1 ->> dummy1FieldValue
@@ -184,14 +183,13 @@ object MigrationTests extends TestSuite {
 		}
 		"A fallback decoder" -{
 			import io.circe.parser.decode
-			import io.circe.generic.auto._
 			case class TestClass(dummy1: String)
 
 			"can be created from a list with one migration" -{
 				case class TargetClass(dummy1: String, dummy2: String)
 				val dummy2MigrationValue = "dummy2MigrationValue"
 				val testMigrations = Migration.instance{(obj:TestClass) => TargetClass(dummy1 = obj.dummy1, dummy2 = dummy2MigrationValue)} :: HNil
-				val fallbackDecoder = CatsDecoder.createFallbackDecoder(testMigrations)
+				val fallbackDecoder = CirceDecoder.createFallbackDecoder(testMigrations)
 
 				"and parse the json for TestClass" -{
 					val decodeResult = decode[TargetClass](
@@ -223,7 +221,7 @@ object MigrationTests extends TestSuite {
 					AppendStep('dummy2 ->> dummy2DefaultValue) ::
 					HNil
 				)
-				val fallbackDecoder = CatsDecoder.createFallbackDecoder(testMigrations)
+				val fallbackDecoder = CirceDecoder.createFallbackDecoder(testMigrations)
 
 				"and parse the json for TestClass" -{
 					val decodeResult = decode[TargetClass](
@@ -258,16 +256,16 @@ object MigrationTests extends TestSuite {
 			}
 
 			"cannot be created from a list with no migrations" - {
-				compileError(""" Transform.combinedDecoder(HNil) """)
+				compileError(""" CirceDecoder.createFallbackDecoder(HNil) """)
 			}
 		}
 		//Works with more fields, but takes waaay to long. The scalac flag -Yinduction-heuristics greatly helps in reducing compile times, but it still takes time with many fields.
 		"Work with huge amounts of anything (steps, migrations, fields in classes)"-{
 			case class BaseClass(field0: String)
 			case class TargetClass(field0: String,
-								   field1: String, field2: String, field3: String, field4: String, field5: String/*,
+								   field1: String, field2: String, field3: String, field4: String, field5: String,
 								   field6: String, field7: String, field8: String, field9: String, field10: String,
-								   field11: String, field12: String, field13: String, field14: String, field15: String,
+								   field11: String/*, field12: String, field13: String, field14: String, field15: String,
 								   field16: String, field17: String, field18: String, field19: String, field20: String,
 								   field21: String, field22: String, field23: String, field24: String, field25: String,
 								   field26: String, field27: String, field28: String, field29: String, field30: String,
@@ -276,9 +274,9 @@ object MigrationTests extends TestSuite {
 
 			val migrations = Migration.between[BaseClass, TargetClass](
 				AppendStep('field1 ->> "field1Value") :: AppendStep('field2 ->> "field2Value") :: AppendStep('field3 ->> "field3Value") ::
-				AppendStep('field4 ->> "field4Value") :: AppendStep('field5 ->> "field5Value")/* :: AppendStep('field6 ->> "field6Value") ::
+				AppendStep('field4 ->> "field4Value") :: AppendStep('field5 ->> "field5Value") :: AppendStep('field6 ->> "field6Value") ::
 					AppendStep('field7 ->> "field7Value") :: AppendStep('field8 ->> "field8Value") :: AppendStep('field9 ->> "field9Value") ::
-					AppendStep('field10 ->> "field10Value") :: AppendStep('field11 ->> "field11Value") :: AppendStep('field12 ->> "field12Value") ::
+					AppendStep('field10 ->> "field10Value") :: AppendStep('field11 ->> "field11Value")/* :: AppendStep('field12 ->> "field12Value") ::
 					AppendStep('field13 ->> "field13Value") :: AppendStep('field14 ->> "field14Value") :: AppendStep('field15 ->> "field15Value") ::
 					AppendStep('field16 ->> "field16Value") :: AppendStep('field17 ->> "field17Value") :: AppendStep('field18 ->> "field18Value") ::
 					AppendStep('field19 ->> "field19Value") :: AppendStep('field20 ->> "field20Value") :: AppendStep('field21 ->> "field21Value") ::
@@ -293,8 +291,8 @@ object MigrationTests extends TestSuite {
 			val combinedMigration = Migration.combinedMigration(migrations)
 			val expectedInstanceByMigrating = TargetClass( field0 = "field0Value",
 				field1 = "field1Value", field2 = "field2Value", field3 = "field3Value", field4 = "field4Value",
-				field5 = "field5Value"/*, field6 = "field6Value", field7 = "field7Value", field8 = "field8Value",
-				field9 = "field9Value", field10 = "field10Value", field11 = "field11Value", field12 = "field12Value",
+				field5 = "field5Value", field6 = "field6Value", field7 = "field7Value", field8 = "field8Value",
+				field9 = "field9Value", field10 = "field10Value", field11 = "field11Value"/*, field12 = "field12Value",
 				field13 = "field13Value", field14 = "field14Value", field15 = "field15Value", field16 = "field16Value",
 				field17 = "field17Value", field18 = "field18Value", field19 = "field19Value", field20 = "field20Value",
 				field21 = "field21Value", field22 = "field22Value", field23 = "field23Value", field24 = "field24Value",

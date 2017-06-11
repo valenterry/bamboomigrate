@@ -1,5 +1,7 @@
-import shapeless._
+package bamboomigrate
+
 import shapeless.PolyDefns._
+import shapeless._
 import shapeless.labelled.FieldType
 
 object TypelevelUtils {

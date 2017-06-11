@@ -1,8 +1,11 @@
+package bamboomigrate.circe
+
+import bamboomigrate.{Migration, TypelevelUtils}
 import io.circe.Decoder
 import shapeless.ops.hlist.LeftFolder
-import shapeless.{::, DepFn1, HList, Poly, Poly2}
+import shapeless.{::, DepFn1, HList, LabelledGeneric, Poly, Poly2}
 
-object CatsDecoder {
+object CirceDecoder {
 	/** Create a combined Decoder from a list of migrations **/
 	trait CombinedDecoder[Migrations <: HList, CombineDecoders <: Poly] extends DepFn1[Migrations] with Serializable
 

@@ -1,6 +1,8 @@
-import Transform.StepConstraint.OnlySteps
-import shapeless.{::, HList, Nat, Witness}
+package bamboomigrate
+
+import bamboomigrate.Transform.StepConstraint.OnlySteps
 import shapeless.labelled.FieldType
+import shapeless.{::, HList, Nat, Witness}
 
 sealed trait TransformStep
 final case class PrependStep[Name, Type](kt: FieldType[Name, Type]) extends TransformStep
