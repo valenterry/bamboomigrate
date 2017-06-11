@@ -36,7 +36,15 @@ object CirceDecoder {
 			}
 	}
 
-	def createFallbackDecoder[StepList <: HList, FallbackDecoderResult](migrations: StepList)(
-		implicit combineDecoders: CombinedDecoder.Aux[StepList, combineDecodersByFallback.type, FallbackDecoderResult]
+	/**
+	  * Creates a circe Decoder from the given list of migrations.
+	  * The decoder will try to decode json into the target type of the last migration.
+	  * If that fails it will try the target type of the penultimate migration and so on until it succeeds or there is no migration left.
+	  * It is required that there (implicitly) exists a decoder for each type of the given list of migrations
+	  * @param migrations The list of migrations
+	  * @return The fallback decoder
+	  */
+	def createFallbackDecoder[MigrationList <: HList, FallbackDecoderResult](migrations: MigrationList)(
+		implicit combineDecoders: CombinedDecoder.Aux[MigrationList, combineDecodersByFallback.type, FallbackDecoderResult]
 	): FallbackDecoderResult = combineDecoders(migrations)
 }
