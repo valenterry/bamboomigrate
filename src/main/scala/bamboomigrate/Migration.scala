@@ -10,17 +10,33 @@ import shapeless.ops.record.{Remover, Renamer}
 
 import scala.annotation.implicitNotFound
 
+/**
+  * A typeclass which allows to convert an instance of one type to an instance of another type
+  * @tparam From The instance which acts as the base
+  * @tparam To The instance that should be created when applying the migration
+  */
 trait Migration[From, To] {
+	/**
+	  * Given an instance of type `From` turns it into an instances of type `To`
+	  * @param from The instance which acts as the base
+	  * @return The instance created by the migration process
+	  */
 	def migrate(from: From): To
 }
 
 object Migration {
 	def apply[From, To](implicit migration: Migration[From, To]): Migration[From, To] = migration
 
+	/**
+	  * A helper to easily create a migration, given a function that does the conversion
+	  */
 	def instance[From, To](m: From => To): Migration[From, To] = new Migration[From, To] {
 		def migrate(from: From): To = m(from)
 	}
 
+	/**
+	  * If already given a migration, this helper will create a new migration by converting the target instance of the given migration into a new type
+	  */
 	def mapTo[From, OldTo, NewTo](old: Migration[From, OldTo], f: OldTo => NewTo): Migration[From, NewTo] =
 		Migration.instance( (obj: From) => f(old.migrate(obj)))
 
@@ -38,7 +54,10 @@ object Migration {
 			scanner.apply(steps.tail, firstMigration)
 		}
 	}
-
+	/**
+	  * Does the same as the `between` method, but the last migration will lead to an abstract LabelledGeneric which is the result from the transformations
+	  * @return The list of migrations from base type to the abstract LabelledGeneric target
+	  */
 	def startingFrom[BaseType] = new StartingFromPartialTypeApplication[BaseType]
 
 	final class FromTargetPartialTypeApplication[TargetType] {
@@ -51,23 +70,48 @@ object Migration {
 		 prepend: Prepend.Aux[MigrationsWithoutLast, Migration[PenultimateType, TargetType] :: HNil, GeneratedMigrations]
 		): GeneratedMigrations = prepend(init(migrations), Migration.instance{(obj:PenultimateType) => targetLG.from(last(migrations).migrate(obj)) } :: HNil)
 	}
-
+	/**
+	  * Replaces the last migration of a list of migrations (where the last migrations leads to an abstract LabelledGeneric) with a new migration that,
+	  * instead, leads to to the provided TargetType
+	  * @tparam TargetType The TargetType to which the last migration should lead to
+	  * @return The new list of migrations
+	  */
 	def fromTarget[TargetType] = new FromTargetPartialTypeApplication[TargetType]
 
 
 	final class BetweenPartialTypeApplication[BaseType, TargetType] {
+		/**
+		  * Given one transformation step (as an HList), returns one migration (as an HList) to migrate the base type to the target type
+		  * @return The migration from base type to target type
+		  * Will fail if the provided transformation step will not transform the base type into the target type
+		  */
 		def apply[BaseTypeLG <: HList, TargetTypeLG <: HList, FirstStep <: TransformStep, Result]
 		(steps: FirstStep :: HNil)
 		(implicit migrationsBetween: MigrationsBetween.Aux[BaseType, TargetType, FirstStep :: HNil, Result]): Result = migrationsBetween.apply(steps)
 
+		/**
+		  * Given transformation steps, returns a list of migrations (as an HList) to step by step migrate the base type to the target type
+		  * @return The list of migrations from base type to target type
+		  * Will fail if the provided transformation steps will not transform the base type into the target type after beeing applied step by step (starting with the first step in the list)
+		  */
 		def apply[BaseTypeLG <: HList, Start, Second, FirstStep, StepList <: HList : OnlySteps, NextLG, ResultingMigrations <: HList, LastFrom, LastTo <: HList, ReplaceResult, Replaced, Result]
 		(steps: FirstStep :: StepList)
 		(implicit migrationsBetween: MigrationsBetween.Aux[BaseType, TargetType, FirstStep :: StepList, Result]
 		): Result = migrationsBetween(steps)
 	}
+
+	/**
+	  * Creates a list (HList) of migrations which can be used step by step to migrate from the base type to the target type
+	  * @tparam BaseType The base type where the first migration starts from
+	  * @tparam TargetType The target type where the last migration ends
+	  * @return A BetweenPartialTypeApplication object (used for partial type application)
+	  */
 	def between[BaseType, TargetType] = new BetweenPartialTypeApplication[BaseType, TargetType]
 
 
+	/**
+	  * Creates a list (HList) of migrations between the given `BaseType` and `TargetType` by using a `StepList` consisting of TransformationSteps
+	  */
 	@implicitNotFound("Unable to migrate from base ${BaseType} to target ${TargetType} using steps ${StepList}. Check that transforming the specified base step by step (in order) of the provided steps really leads to the specified base")
 	trait MigrationsBetween[BaseType, TargetType, StepList <: HList] extends DepFn1[StepList] with Serializable
 
@@ -114,13 +158,19 @@ object Migration {
 			}
 	}
 
+
 	object combineMigrations extends Poly2 {
 		implicit def combine[A, B, C]: Case.Aux[Migration[A, B], Migration[B, C], Migration[A, C]] =
 			at{ (migration: Migration[A, B], m2: Migration[B, C]) => Migration.instance( a => m2.migrate(migration.migrate(a)) ) }
 	}
 
-	def combinedMigration[Start, Second, StepList <: HList](migrations: Migration[Start, Second] :: StepList)(
-		implicit folder: LeftFolder[StepList, Migration[Start, Second], combineMigrations.type]
+	/**
+	  * If given a list of migrations, creates one single new migration that will go from the base type of the first migration to the target type of the last migration
+	  * @param migrations The list of migrations
+	  * @return The new migration
+	  */
+	def combinedMigration[Start, Second, MigrationList <: HList](migrations: Migration[Start, Second] :: MigrationList)(
+		implicit folder: LeftFolder[MigrationList, Migration[Start, Second], combineMigrations.type]
 	) = migrations.tail.foldLeft(migrations.head)(combineMigrations)
 
 
