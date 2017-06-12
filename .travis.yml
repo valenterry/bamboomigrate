@@ -4,6 +4,7 @@ scala:
 - 2.11.8
 - 2.12.1
 script: sbt clean test
+dist: trusty
 jdk:
 - oraclejdk8
 - openjdk8
