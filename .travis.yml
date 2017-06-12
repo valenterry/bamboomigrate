@@ -5,8 +5,8 @@ scala:
 - 2.12.1
 script: sbt clean test
 jdk:
-- oraclejdk7
-- openjdk7
+- oraclejdk8
+- openjdk8
 notifications:
   email:
     recipients:
