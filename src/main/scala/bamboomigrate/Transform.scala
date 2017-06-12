@@ -63,7 +63,7 @@ object Transform {
 				}
 				replaceModifier(base, replaceFunction)._2
 			}
-			}
+		}
 
 		implicit def byChangeTypeStep[B <: HList, Name, OldType, NewType, _ReplacedElement, ReplaceResult]
 		(implicit replaceModifier: shapeless.ops.hlist.Modifier.Aux[B, FieldType[Name, OldType], FieldType[Name, NewType], (_ReplacedElement, ReplaceResult)]):
