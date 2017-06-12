@@ -1,0 +1,13 @@
+# For reference http://about.travis-ci.org/docs/user/build-configuration/
+language: scala
+scala:
+- 2.11.8
+- 2.12.1
+script: sbt clean test
+jdk:
+- oraclejdk7
+- openjdk7
+notifications:
+  email:
+    recipients:
+    - valentin@willscher.de
