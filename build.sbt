@@ -1,5 +1,3 @@
-import jdk.nashorn.internal.objects.Global
-
 name := "bamboomigrate"
 
 version := "0.1"
