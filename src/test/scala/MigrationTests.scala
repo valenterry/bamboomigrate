@@ -268,26 +268,26 @@ object MigrationTests extends TestSuite {
 				val dummy2MigrationValue = "dummy2MigrationValue"
 				val testMigrations = Migration.instance{(obj:TestClass) => TargetClass(dummy1 = obj.dummy1, dummy2 = dummy2MigrationValue)} :: HNil
 
-				val fallbackDecoder = PlayJson.createFallbackReads(testMigrations)
+				val fallbackReads = PlayJson.createFallbackReads(testMigrations)
 
 				"and parse the json for TestClass" -{
-					val decodeResult = Json.parse(
+					val readsResult = Json.parse(
 						"""{
 						  |"dummy1": "dummy1JsonValue"
 						  |}
-						""".stripMargin).validate[TargetClass](fallbackDecoder).asEither
+						""".stripMargin).validate[TargetClass](fallbackReads).asEither
 					val expectedDecodeResult = Right(TargetClass(dummy1 = "dummy1JsonValue", dummy2 = dummy2MigrationValue))
-					assert(decodeResult == expectedDecodeResult)
+					assert(readsResult == expectedDecodeResult)
 				}
 				"and parse the json for TargetClass"- {
-					val decodeResult = Json.parse(
+					val readsResult = Json.parse(
 						"""{
 						  |"dummy1": "dummy1JsonValue",
 						  |"dummy2": "dummy2JsonValue"
 						  |}
-						""".stripMargin).validate[TargetClass](fallbackDecoder).asEither
+						""".stripMargin).validate[TargetClass](fallbackReads).asEither
 					val expectedDecodeResult = Right(TargetClass(dummy1 = "dummy1JsonValue", dummy2 = "dummy2JsonValue"))
-					assert(decodeResult == expectedDecodeResult)
+					assert(readsResult == expectedDecodeResult)
 				}
 			}
 
@@ -300,42 +300,42 @@ object MigrationTests extends TestSuite {
 						AppendStep('dummy2 ->> dummy2DefaultValue) ::
 						HNil
 				)
-				val fallbackDecoder = PlayJson.createFallbackReads(testMigrations)
+				val fallbackReads = PlayJson.createFallbackReads(testMigrations)
 
 				"and parse the json for TestClass" -{
-					val decodeResult = Json.parse(
+					val readsResult = Json.parse(
 						"""{
 						  |"dummy1": "dummy1JsonValue"
 						  |}
-						""".stripMargin).validate[TargetClass](fallbackDecoder).asEither
+						""".stripMargin).validate[TargetClass](fallbackReads).asEither
 					val expectedDecodeResult = Right(TargetClass(dummy1 = "dummy1JsonValue", dummy2 = dummy2DefaultValue, prependedField = prependedFieldDefaultValue))
-					assert(decodeResult == expectedDecodeResult)
+					assert(readsResult == expectedDecodeResult)
 				}
 				"and parse the json for the intermediate type like: `prependedField: String, dummy1: String`"- {
-					val decodeResult = Json.parse(
+					val readsResult = Json.parse(
 						"""{
 						  |"dummy1": "dummy1JsonValue",
 						  |"prependedField": "prependedFieldJsonValue"
 						  |}
-						""".stripMargin).validate[TargetClass](fallbackDecoder).asEither
+						""".stripMargin).validate[TargetClass](fallbackReads).asEither
 					val expectedDecodeResult = Right(TargetClass(dummy1 = "dummy1JsonValue", dummy2 = dummy2DefaultValue, prependedField = "prependedFieldJsonValue"))
-					assert(decodeResult == expectedDecodeResult)
+					assert(readsResult == expectedDecodeResult)
 				}
 				"and parse the json for TargetClass"- {
-					val decodeResult = Json.parse(
+					val readsResult = Json.parse(
 						"""{
 						  |"dummy1": "dummy1JsonValue",
 						  |"prependedField": "prependedFieldJsonValue",
 						  |"dummy2": "dummy2JsonValue"
 						  |}
-						""".stripMargin).validate[TargetClass](fallbackDecoder).asEither
+						""".stripMargin).validate[TargetClass](fallbackReads).asEither
 					val expectedDecodeResult = Right(TargetClass(dummy1 = "dummy1JsonValue", dummy2 = "dummy2JsonValue", prependedField = "prependedFieldJsonValue"))
-					assert(decodeResult == expectedDecodeResult)
+					assert(readsResult == expectedDecodeResult)
 				}
 			}
 
 			"cannot be created from a list with no migrations" - {
-				compileError(""" createFallbackDecoder(HNil) """)
+				compileError(""" PlayJson.createFallbackReads(HNil) """)
 			}
 		}
 
