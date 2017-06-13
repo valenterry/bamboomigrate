@@ -1,6 +1,6 @@
 /*
 	This will publish to sonatype / maven central
-	Use `sbt -Dsonatype.username=$user -Dsonatype.password=$password "+ publish"` to publish IF you have sonatype access.
+	Use `sbt -DSONATYPE_USERNAME=$username -DSONATYPE_PASSWORD=$password "+ publish"` to publish IF you have sonatype access.
 	The env vars above will be set when building/publishing with travis CI. Also see sonatype.sbt
  */
 
