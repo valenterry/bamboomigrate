@@ -12,3 +12,5 @@ notifications:
   email:
     recipients:
     - valentin@willscher.de
+after_success:
+  - "[[ $TRAVIS_BRANCH == \"master\" ]] && { sbt \"+ publish\"; };"

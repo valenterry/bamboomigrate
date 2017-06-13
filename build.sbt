@@ -1,6 +1,6 @@
 name := "bamboomigrate"
 
-version := "0.1"
+organization := "de.willscher"
 
 scalaVersion := "2.12.1"
 scalaOrganization in ThisBuild := "org.typelevel"
