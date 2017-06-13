@@ -1,6 +1,6 @@
 /*
 	This will publish to sonatype / maven central
-	Use `sbt -DSONATYPE_USERNAME=$username -DSONATYPE_PASSWORD=$password "+ publish"` to publish IF you have sonatype access.
+	Use `sbt -DSONATYPE_USERNAME=$username -DSONATYPE_PASSWORD=$password -DSONATYPE_SECRETKEY_PHRASE=$secretkeyphrase "+ signedPublish"` to publish IF you have sonatype access.
 	The env vars above will be set when building/publishing with travis CI. Also see sonatype.sbt
  */
 
@@ -33,6 +33,7 @@ pomExtra := (
 			<developer>
 				<id>valenterry</id>
 				<name>Valentin Willscher</name>
+				<email>valentin@willscher.de</email>
 			</developer>
 		</developers>
 	)
