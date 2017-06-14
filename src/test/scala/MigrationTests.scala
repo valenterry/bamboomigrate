@@ -41,7 +41,7 @@ object MigrationTests extends TestSuite {
 				assert(result == expected)
 			}
 			"remove"- {
-				val result = Transform.transformationByAnyStep.apply(testInstanceLG, RemoveStep('dummy1.narrow))
+				val result = Transform.transformationByAnyStep.apply(testInstanceLG, RemoveStep('dummy1))
 				val expected = dummy2Field :: HNil
 				assert(result == expected)
 			}

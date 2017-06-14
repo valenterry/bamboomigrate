@@ -7,7 +7,18 @@ import shapeless.{::, HList, Nat, Witness}
 sealed trait TransformStep
 final case class PrependStep[Name, Type](kt: FieldType[Name, Type]) extends TransformStep
 final case class AppendStep[Name, Type](kt: FieldType[Name, Type]) extends TransformStep
-final case class RemoveStep[Name](name: Name) extends TransformStep
+
+/**
+  * Type parameter must be provided. Use apply method of compagnion object.
+  * Example: RemoveStep(name = 'nameOfFieldToDelete)
+  */
+final case class RemoveStep[Name]() extends TransformStep
+object RemoveStep {
+	/**
+	  * Call this to create a new RemoveStep. For instance: RemoveStep(name = 'nameOfFieldToDelete)
+	  */
+	def apply[Name](name: Witness.Lt[Name]): RemoveStep[Name] = RemoveStep[Name]()
+}
 final case class InsertAtStep[InsertPosition <: Nat, Name, Type](position: InsertPosition, kt: FieldType[Name, Type]) extends TransformStep
 final case class ReplaceStep[OldName, NewName, OldType, NewType](mapName: (OldName, NewName), mapValue: OldType => NewType) extends TransformStep
 final case class ChangeTypeStep[Name, OldType, NewType](fieldName: Name, mapValue: OldType => NewType) extends TransformStep
