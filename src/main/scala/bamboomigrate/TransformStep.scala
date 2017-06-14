@@ -33,7 +33,21 @@ object ReplaceStep {
 	def apply[OldName, NewName, OldType, NewType](oldName: Witness.Lt[OldName], newName: Witness.Lt[NewName], mapValue: OldType => NewType): ReplaceStep[OldName, NewName, OldType, NewType] =
 		ReplaceStep[OldName, NewName, OldType, NewType](mapValue)
 }
-final case class ChangeTypeStep[Name, OldType, NewType](fieldName: Name, mapValue: OldType => NewType) extends TransformStep
+/**
+  * All type parameters must be provided. Use apply method of compagnion object.
+  * Example: ChangeTypeStep(fieldName = 'someField, mapValue: (_: String) => 42)
+  */
+final case class ChangeTypeStep[Name, OldType, NewType](mapValue: OldType => NewType) extends TransformStep
+object ChangeTypeStep {
+	/**
+	  * Call this to create a new ChangeTypeStep.
+	  * For instance: ChangeTypeStep(fieldName = 'someField, mapValue: (_: String) => 42)
+	  */
+	def apply[Name, OldType, NewType](fieldName: Witness.Lt[Name], mapValue: OldType => NewType): ChangeTypeStep[Name, OldType, NewType] =
+		ChangeTypeStep[Name, OldType, NewType](mapValue)
+}
+
+
 final case class TransformFieldsStep[OldFields <: HList, NewFields <: HList, InsertPosition <: Nat](position: InsertPosition, transform: OldFields => NewFields) extends TransformStep
 final case class FullTransformStep[From <: HList, To <: HList](transform: From => To) extends TransformStep
 //Hmmm, should we really force SequenceStep to contain at least one step?
