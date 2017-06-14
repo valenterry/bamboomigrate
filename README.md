@@ -30,10 +30,11 @@ it is designed to be extended for different purposes.
 
 ## How to use
 
-Bamboomigrate is built for Scala 2.11 and 2.12, with dependencies of shapeless and also [play-json] and [circe] for third party json (de)serialization support.
+Bamboomigrate is built for Scala 2.11 and 2.12, with dependencies of shapeless and also [play-json] (together with [play-json-derived-codecs]) and [circe] for third party json (de)serialization support.
 The latest stable version is 0.2. You can easily include it via SBT or Maven.
 
 [play-json]: https://github.com/playframework/play-json
+[play-json-derived-codecs]: https://github.com/julienrf/play-json-derived-codecs
 [circe]: https://circe.github.io/circe/
 
 ### SBT
