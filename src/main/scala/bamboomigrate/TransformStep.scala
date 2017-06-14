@@ -20,7 +20,19 @@ object RemoveStep {
 	def apply[Name](name: Witness.Lt[Name]): RemoveStep[Name] = RemoveStep[Name]()
 }
 final case class InsertAtStep[InsertPosition <: Nat, Name, Type](position: InsertPosition, kt: FieldType[Name, Type]) extends TransformStep
-final case class ReplaceStep[OldName, NewName, OldType, NewType](mapName: (OldName, NewName), mapValue: OldType => NewType) extends TransformStep
+/**
+  * All type parameters must be provided. Use apply method of compagnion object.
+  * Example: ReplaceStep(oldName = 'oldFieldName, newName = oldName = 'newFieldName, mapValue: (oldValue: String) => oldValue + "appendThis")
+  */
+final case class ReplaceStep[OldName, NewName, OldType, NewType](mapValue: OldType => NewType) extends TransformStep
+object ReplaceStep {
+	/**
+	  * Call this to create a new ReplaceStep.
+	  * For instance: ReplaceStep(oldName = 'oldFieldName, newName = oldName = 'newFieldName, mapValue: (oldValue: String) => oldValue + "appendThis")
+	  */
+	def apply[OldName, NewName, OldType, NewType](oldName: Witness.Lt[OldName], newName: Witness.Lt[NewName], mapValue: OldType => NewType): ReplaceStep[OldName, NewName, OldType, NewType] =
+		ReplaceStep[OldName, NewName, OldType, NewType](mapValue)
+}
 final case class ChangeTypeStep[Name, OldType, NewType](fieldName: Name, mapValue: OldType => NewType) extends TransformStep
 final case class TransformFieldsStep[OldFields <: HList, NewFields <: HList, InsertPosition <: Nat](position: InsertPosition, transform: OldFields => NewFields) extends TransformStep
 final case class FullTransformStep[From <: HList, To <: HList](transform: From => To) extends TransformStep

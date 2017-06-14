@@ -51,7 +51,7 @@ object MigrationTests extends TestSuite {
 				assert(result == expected)
 			}
 			"replace"- {
-				val result = Transform.transformationByAnyStep.apply(testInstanceLG, ReplaceStep('dummy1.narrow -> 'dummy1renamed.narrow, (oldValue: String) => oldValue + "someNewValue"))
+				val result = Transform.transformationByAnyStep.apply(testInstanceLG, ReplaceStep(oldName = 'dummy1, newName = 'dummy1renamed, (oldValue: String) => oldValue + "someNewValue"))
 				val expected = 'dummy1renamed ->> (dummy1FieldValue + "someNewValue") :: dummy2Field :: HNil
 				assert(result == expected)
 			}
