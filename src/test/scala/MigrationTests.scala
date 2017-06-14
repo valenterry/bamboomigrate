@@ -46,7 +46,7 @@ object MigrationTests extends TestSuite {
 				assert(result == expected)
 			}
 			"rename (should not change value of field)"- {
-				val result = Transform.transformationByAnyStep.apply(testInstanceLG, RenameStep('dummy1.narrow -> 'dummy1renamed.narrow))
+				val result = Transform.transformationByAnyStep.apply(testInstanceLG, RenameStep(oldName = 'dummy1, newName = 'dummy1renamed))
 				val expected = 'dummy1renamed ->> dummy1FieldValue :: dummy2Field :: HNil
 				assert(result == expected)
 			}
@@ -81,8 +81,7 @@ object MigrationTests extends TestSuite {
 					testInstanceLG,
 					SequenceStep(
 						PrependStep('nameByPrependStep ->> "valueByPrependStep") ::
-						//RenameStep('nameByPrependStep ->> "tossWay", 'nameByRenameStep ->> "tossWay") ::
-						RenameStep('nameByPrependStep.narrow -> 'nameByRenameStep.narrow) ::
+						RenameStep(oldName = 'nameByPrependStep, newName = 'nameByRenameStep) ::
 						PrependStep('secondNameByPrependStep ->> "secondValueByPrependStep") ::
 						HNil
 					)
