@@ -119,7 +119,7 @@ object User {
    implicit val userReads = PlayJson.createFallbackReads(                //Create a fallback-reads for the following migrations
       Migration.between[InitialUser, User](                              //from the class InitialUser to the target class User
          RenameStep('firstname ->> "", 'givenname ->> "") ::             //We first change the name of the firstname-field
-         AppendStep('logins ->> 0) ::                                    //Then we add a logins-field at the end of the class, giving 42 as default value
+         AppendStep('logins ->> 0) ::                                    //Then we add a logins-field at the end of the class, giving 0 as default value
          RemoveStep('birthdate.narrow) ::                                //Remove the birthday field, we are not allowed to use this anymore
          InsertAtStep(Nat(2), 'nickname ->> (None: Option[String]) ) ::  //Add a nickname-field behind familyname, with None as default value
          HNil
