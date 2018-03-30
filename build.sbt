@@ -2,10 +2,10 @@ name := "bamboomigrate"
 
 organization := "de.willscher"
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.4-bin-typelevel-4"
 scalaOrganization in ThisBuild := "org.typelevel"
 
-crossScalaVersions := Seq("2.11.8", "2.12.1")
+crossScalaVersions := Seq("2.11.8", "2.12.4-bin-typelevel-4")
 
 def scalacOptionsVersion(scalaVersion: String) = {
 	Seq(
@@ -58,8 +58,8 @@ scalacOptions := scalacOptionsVersion(scalaVersion.value)
 
 libraryDependencies ++= Seq(
 	"com.chuusai" %% "shapeless" % "2.3.2",
-	"com.lihaoyi" %% "utest" % "0.4.5" % "test",
-	"com.typesafe.play" %% "play-json" % "2.6.0-M3",
+	"com.lihaoyi" %% "utest" % "0.6.3" % "test",
+	"com.typesafe.play" %% "play-json" % "2.6.7",
 	"org.julienrf" %% "play-json-derived-codecs" % "4.0.0-RC1"
 )
 
